@@ -43,13 +43,14 @@ logAndReport(NumberGroups.decode({}));
 logAndReport(NumberGroups.decode([[{}]]));
 
 const Unions = t.interface({
-    onOf: t.keyof({ a: null, b: null, c: null }),
+    oneOf: t.keyof({ a: null, b: null, c: null }),
     stringUnion: t.union([t.literal('a'), t.literal('b'), t.literal('c')]),
     interfaceUnion: t.union([
         t.interface({ key: t.string }),
         t.interface({ code: t.number }),
     ]),
 });
+logAndReport(Unions.decode({ oneOf: '', stringUnion: '', interfaceUnion: '' }));
 logAndReport(
-    Unions.decode({ oneOf: 'A', stringUnion: '', interfaceUnion: {} }),
+    Unions.decode({ oneOf: 'a', stringUnion: 'a', interfaceUnion: {} }),
 );
