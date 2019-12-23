@@ -1,6 +1,6 @@
 import * as array from 'fp-ts/lib/Array';
 import { fold, mapLeft } from 'fp-ts/lib/Either';
-import * as NEA from 'fp-ts/lib/NonEmptyArray';
+import { groupBy, head, NonEmptyArray, tail } from 'fp-ts/lib/NonEmptyArray';
 import { map, none, some } from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { toArray } from 'fp-ts/lib/Record';
@@ -25,15 +25,17 @@ const getErrorFromCtx = ({ context }: t.ValidationError) =>
     array.last(context as Array<t.ContextEntry>);
 
 export const formatUnionError = (
-    errors: NEA.NonEmptyArray<t.ValidationError>,
+    path: string,
+    errors: NonEmptyArray<t.ValidationError>,
 ) => {
-    const error = NEA.head(errors);
-    const path = keyPath(error.context.filter(isUnionType));
+    const { value } = head(errors);
 
     const expectedTypes = pipe(
         errors,
-        NEA.map(getErrorFromCtx),
-        arr => [NEA.head(arr), ...NEA.tail(arr)],
+        error => (console.log(error[0].context), error),
+        // TODO: find the errors key key as numeric number (ie. after UnionType)
+        // [ type InterfaceType, type UnionType, type X & key 'N' ] -> where N is an int
+        array.map(getErrorFromCtx),
         array.compact,
         array.map(({ type }) => `    ${type.name}`),
         arr => arr.join('\n'),
@@ -46,14 +48,12 @@ export const formatUnionError = (
               // tslint:disable-next-line:prefer-template
               `Expecting one of:\n${expectedTypes}` +
                   (path === '' ? '\n' : `\nat ${path} `) +
-                  `but instead got: ${jsToString(error.value)}.`,
+                  `but instead got: ${jsToString(value)}.`,
           );
 };
 
-export const formatValidationError = (error: t.ValidationError) => {
-    const path = keyPath(error.context);
-
-    return pipe(
+export const formatValidationError = (path: string, error: t.ValidationError) =>
+    pipe(
         error,
         getErrorFromCtx,
         map(errorContext => {
@@ -68,14 +68,16 @@ export const formatValidationError = (error: t.ValidationError) => {
             );
         }),
     );
-};
 
-export const format = (errors: NEA.NonEmptyArray<t.ValidationError>) =>
-    NEA.tail(errors).length > 0
-        ? formatUnionError(errors)
-        : formatValidationError(NEA.head(errors));
+export const format = (
+    path: string,
+    errors: NonEmptyArray<t.ValidationError>,
+) =>
+    tail(errors).length > 0
+        ? formatUnionError(path, errors)
+        : formatValidationError(path, head(errors));
 
-const groupByKey = NEA.groupBy((error: t.ValidationError) =>
+const groupByKey = groupBy((error: t.ValidationError) =>
     error.context.some(isUnionType)
         ? keyPath(error.context.filter(isUnionType))
         : keyPath(error.context),
@@ -86,7 +88,7 @@ export const reporter = <T>(validation: t.Validation<T>) =>
         validation,
         mapLeft(groupByKey),
         mapLeft(toArray),
-        mapLeft(array.map(([_key, errors]) => format(errors))),
+        mapLeft(array.map(([path, errors]) => format(path, errors))),
         mapLeft(array.compact),
         fold(
             errors => errors,
