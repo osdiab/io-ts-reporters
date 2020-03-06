@@ -1,7 +1,8 @@
-import * as array from 'fp-ts/lib/Array';
-import { fold, mapLeft } from 'fp-ts/lib/Either';
-import { groupBy, head, NonEmptyArray, tail } from 'fp-ts/lib/NonEmptyArray';
-import { map, none, some } from 'fp-ts/lib/Option';
+import * as A from 'fp-ts/lib/Array';
+import * as E from 'fp-ts/lib/Either';
+import { flow } from 'fp-ts/lib/function';
+import * as NEA from 'fp-ts/lib/NonEmptyArray';
+import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { toArray } from 'fp-ts/lib/Record';
 import * as t from 'io-ts';
@@ -20,33 +21,54 @@ const keyPath = (ctx: t.Context) =>
         .join('.');
 
 // The actual error is last in context
-const getErrorFromCtx = ({ context }: t.ValidationError) =>
+const getErrorFromCtx = (validation: t.ValidationError) =>
     // https://github.com/gcanti/fp-ts/pull/544/files
-    array.last(context as Array<t.ContextEntry>);
+    A.last(validation.context as Array<t.ContextEntry>);
+
+const getValidationContext = (validation: t.ValidationError) =>
+    // https://github.com/gcanti/fp-ts/pull/544/files
+    validation.context as Array<t.ContextEntry>;
+
+const expectedTypesToString = flow(
+    A.map(({ type }: t.ContextEntry) => `    ${type.name}`),
+    arr => arr.join('\n'),
+);
 
 export const formatUnionError = (
     path: string,
-    errors: NonEmptyArray<t.ValidationError>,
+    errors: NEA.NonEmptyArray<t.ValidationError>,
 ) => {
-    const { value } = head(errors);
-
     const expectedTypes = pipe(
         errors,
-        error => (console.log(error[0].context), error),
-        // TODO: find the errors key key as numeric number (ie. after UnionType)
-        // [ type InterfaceType, type UnionType, type X & key 'N' ] -> where N is an int
-        array.map(getErrorFromCtx),
-        array.compact,
-        array.map(({ type }) => `    ${type.name}`),
-        arr => arr.join('\n'),
+        A.map(getValidationContext),
+        A.map(ctx =>
+            pipe(
+                ctx,
+                // find the union type in the list of ContextEntry
+                A.findIndex(isUnionType),
+                // the next ContextEntry should be the
+                // type of this branch of the union
+                O.chain(n => A.lookup(n + 1, ctx)),
+            ),
+        ),
+        A.compact,
     );
 
-    return expectedTypes.trim() === ''
-        ? none
-        : some(
+    const value = pipe(
+        expectedTypes,
+        A.head,
+        O.map(v => v.actual),
+        O.getOrElse<unknown>(() => undefined),
+    );
+
+    const expected = expectedTypesToString(expectedTypes);
+
+    return expected.trim() === ''
+        ? O.none
+        : O.some(
               // https://github.com/elm-lang/core/blob/18c9e84e975ed22649888bfad15d1efdb0128ab2/src/Native/Json.js#L199
               // tslint:disable-next-line:prefer-template
-              `Expecting one of:\n${expectedTypes}` +
+              `Expecting one of:\n${expected}` +
                   (path === '' ? '\n' : `\nat ${path} `) +
                   `but instead got: ${jsToString(value)}.`,
           );
@@ -56,7 +78,7 @@ export const formatValidationError = (path: string, error: t.ValidationError) =>
     pipe(
         error,
         getErrorFromCtx,
-        map(errorContext => {
+        O.map(errorContext => {
             const expectedType = errorContext.type.name;
 
             return (
@@ -71,13 +93,13 @@ export const formatValidationError = (path: string, error: t.ValidationError) =>
 
 export const format = (
     path: string,
-    errors: NonEmptyArray<t.ValidationError>,
+    errors: NEA.NonEmptyArray<t.ValidationError>,
 ) =>
-    tail(errors).length > 0
+    NEA.tail(errors).length > 0
         ? formatUnionError(path, errors)
-        : formatValidationError(path, head(errors));
+        : formatValidationError(path, NEA.head(errors));
 
-const groupByKey = groupBy((error: t.ValidationError) =>
+const groupByKey = NEA.groupBy((error: t.ValidationError) =>
     error.context.some(isUnionType)
         ? keyPath(error.context.filter(isUnionType))
         : keyPath(error.context),
@@ -86,11 +108,11 @@ const groupByKey = groupBy((error: t.ValidationError) =>
 export const reporter = <T>(validation: t.Validation<T>) =>
     pipe(
         validation,
-        mapLeft(groupByKey),
-        mapLeft(toArray),
-        mapLeft(array.map(([path, errors]) => format(path, errors))),
-        mapLeft(array.compact),
-        fold(
+        E.mapLeft(groupByKey),
+        E.mapLeft(toArray),
+        E.mapLeft(A.map(([path, errors]) => format(path, errors))),
+        E.mapLeft(A.compact),
+        E.fold(
             errors => errors,
             () => [],
         ),
