@@ -1,8 +1,8 @@
 import * as iots from 'io-ts';
-import { withMessage } from 'io-ts-types/lib/withMessage';
+import {withMessage} from 'io-ts-types/lib/withMessage';
 import * as test from 'tape';
 
-import { reporter } from '../src';
+import {reporter} from '../src';
 
 test('reports an empty array when the result doesn’t contain errors', (t) => {
   const PrimitiveType = iots.string;
@@ -54,7 +54,7 @@ test('formats a complex type correctly', (t) => {
   });
   const result = Person.decode({
     name: 'Giulio',
-    children: [{ gender: 'Whatever' }]
+    children: [{gender: 'Whatever'}]
   });
 
   t.deepEqual(reporter(result), [
@@ -71,15 +71,15 @@ at gender but instead got: undefined`
 
 test('handles union types properly', (t) => {
   const Unions = iots.interface({
-    oneOf: iots.keyof({ a: null, b: null, c: null }),
+    oneOf: iots.keyof({a: null, b: null, c: null}),
     stringUnion: iots.union([
       iots.literal('a'),
       iots.literal('b'),
       iots.literal('c')
     ]),
     interfaceUnion: iots.union([
-      iots.interface({ key: iots.string }),
-      iots.interface({ code: iots.number })
+      iots.interface({key: iots.string}),
+      iots.interface({code: iots.number})
     ])
   });
 
