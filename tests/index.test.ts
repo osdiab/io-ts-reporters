@@ -1,8 +1,8 @@
 import * as iots from 'io-ts';
-import {withMessage} from 'io-ts-types/lib/withMessage';
+import { withMessage } from 'io-ts-types/lib/withMessage';
 import * as test from 'tape';
 
-import {reporter} from '../src';
+import { reporter } from '../src';
 
 test('reports an empty array when the result doesn’t contain errors', (t) => {
   const PrimitiveType = iots.string;
@@ -54,32 +54,32 @@ test('formats a complex type correctly', (t) => {
   });
   const result = Person.decode({
     name: 'Giulio',
-    children: [{gender: 'Whatever'}]
+    children: [{ gender: 'Whatever' }]
   });
 
   t.deepEqual(reporter(result), [
-    'Expecting number at age but instead got: undefined.',
+    'Expecting number at age but instead got: undefined',
     `Expecting one of:
     "Male"
     "Female"
     "Male"
     "Female"
-at gender but instead got: undefined.`
+at gender but instead got: undefined`
   ]);
   t.end();
 });
 
 test('handles union types properly', (t) => {
   const Unions = iots.interface({
-    oneOf: iots.keyof({a: null, b: null, c: null}),
+    oneOf: iots.keyof({ a: null, b: null, c: null }),
     stringUnion: iots.union([
       iots.literal('a'),
       iots.literal('b'),
       iots.literal('c')
     ]),
     interfaceUnion: iots.union([
-      iots.interface({key: iots.string}),
-      iots.interface({code: iots.number})
+      iots.interface({ key: iots.string }),
+      iots.interface({ code: iots.number })
     ])
   });
 
@@ -95,13 +95,13 @@ test('handles union types properly', (t) => {
       `Expecting one of:
     { key: string }
     { code: number }
-at interfaceUnion but instead got: "".`,
-      'Expecting "a" | "b" | "c" at oneOf but instead got: "".',
+at interfaceUnion but instead got: ""`,
+      'Expecting "a" | "b" | "c" at oneOf but instead got: ""',
       `Expecting one of:
     "a"
     "b"
     "c"
-at stringUnion but instead got: "".`
+at stringUnion but instead got: ""`
     ]
   );
 
@@ -117,7 +117,7 @@ at stringUnion but instead got: "".`
       `Expecting one of:
     { key: string }
     { code: number }
-at interfaceUnion but instead got: {}.`
+at interfaceUnion but instead got: {}`
     ]
   );
 
