@@ -58,12 +58,69 @@ test('formats a complex type correctly', (t) => {
   });
 
   t.deepEqual(reporter(result), [
-    'Expecting number at age but instead got: undefined',
-    'Expecting "Male" at gender.0 but instead got: undefined',
-    'Expecting "Female" at gender.1 but instead got: undefined',
-    'Expecting "Male" at children.0.gender.0 but instead got: "Whatever"',
-    'Expecting "Female" at children.0.gender.1 but instead got: "Whatever"'
+    'Expecting number at age but instead got: undefined.',
+    `Expecting one of:
+    "Male"
+    "Female"
+    "Male"
+    "Female"
+at gender but instead got: undefined.`
   ]);
+  t.end();
+});
+
+test('handles union types properly', (t) => {
+  const Unions = iots.interface({
+    oneOf: iots.keyof({a: null, b: null, c: null}),
+    stringUnion: iots.union([
+      iots.literal('a'),
+      iots.literal('b'),
+      iots.literal('c')
+    ]),
+    interfaceUnion: iots.union([
+      iots.interface({key: iots.string}),
+      iots.interface({code: iots.number})
+    ])
+  });
+
+  t.deepEqual(
+    reporter(
+      Unions.decode({
+        oneOf: '',
+        stringUnion: '',
+        interfaceUnion: ''
+      })
+    ),
+    [
+      `Expecting one of:
+    { key: string }
+    { code: number }
+at interfaceUnion but instead got: "".`,
+      'Expecting "a" | "b" | "c" at oneOf but instead got: "".',
+      `Expecting one of:
+    "a"
+    "b"
+    "c"
+at stringUnion but instead got: "".`
+    ]
+  );
+
+  t.deepEqual(
+    reporter(
+      Unions.decode({
+        oneOf: 'a',
+        stringUnion: 'a',
+        interfaceUnion: {}
+      })
+    ),
+    [
+      `Expecting one of:
+    { key: string }
+    { code: number }
+at interfaceUnion but instead got: {}.`
+    ]
+  );
+
   t.end();
 });
 
