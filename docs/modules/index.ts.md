@@ -11,8 +11,8 @@ An [io-ts Reporter](https://gcanti.github.io/io-ts/modules/Reporter.ts.html#repo
 **Example**
 
 ```ts
-import * as t from 'io-ts'
-import Reporter from 'io-ts-reporters'
+import * as t from '@osdiab/io-ts'
+import Reporter from '@osdiab/io-ts-reporters'
 
 const User = t.interface({ name: t.string })
 
@@ -91,8 +91,8 @@ export declare const formatValidationErrors: (errors: t.Errors, options?: Report
 
 ```ts
 import * as E from 'fp-ts/Either'
-import * as t from 'io-ts'
-import { formatValidationErrors } from 'io-ts-reporters'
+import * as t from '@osdiab/io-ts'
+import { formatValidationErrors } from '@osdiab/io-ts-reporters'
 
 const result = t.string.decode(123)
 

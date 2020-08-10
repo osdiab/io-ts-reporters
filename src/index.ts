@@ -3,8 +3,8 @@
  *
  * @example
  *
- * import * as t from 'io-ts';
- * import Reporter from 'io-ts-reporters';
+ * import * as t from '@osdiab/io-ts';
+ * import Reporter from '@osdiab/io-ts-reporters';
  *
  * const User = t.interface({ name: t.string });
  *
@@ -22,8 +22,8 @@ import * as NEA from 'fp-ts/NonEmptyArray';
 import * as O from 'fp-ts/Option';
 import * as R from 'fp-ts/Record';
 import { pipe } from 'fp-ts/pipeable';
-import * as t from 'io-ts';
-import { Reporter } from 'io-ts/lib/Reporter';
+import * as t from '@osdiab/io-ts';
+import { Reporter } from '@osdiab/io-ts/Reporter';
 
 import { takeUntil } from './utils';
 
@@ -173,8 +173,8 @@ export const formatValidationError = (
  *
  * @example
  * import * as E from 'fp-ts/Either'
- * import * as t from 'io-ts'
- * import { formatValidationErrors } from 'io-ts-reporters'
+ * import * as t from '@osdiab/io-ts'
+ * import { formatValidationErrors } from '@osdiab/io-ts-reporters'
  *
  * const result = t.string.decode(123)
  *

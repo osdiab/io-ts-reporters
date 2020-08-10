@@ -1,6 +1,6 @@
 import test from 'ava';
-import * as iots from 'io-ts';
-import { withMessage } from 'io-ts-types/lib/withMessage';
+import * as iots from '@osdiab/io-ts';
+import { withMessage } from '@osdiab/io-ts-types/lib/withMessage';
 
 import Reporter, { TYPE_MAX_LEN } from '../src';
 
