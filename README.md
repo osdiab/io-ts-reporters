@@ -30,8 +30,8 @@ yarn add io-ts-reporters
 ## Example
 
 ```ts
-import * as t from '@osdiab/io-ts';
-import reporter from '@osdiab/io-ts-reporters';
+import * as t from 'io-ts';
+import reporter from 'io-ts-reporters';
 
 const User = t.interface({ name: t.string });
 
@@ -48,8 +48,8 @@ To only format the validation errors in case the validation failed (ie.
 `mapLeft`) use `formatValidationErrors` instead.
 
 ```ts
-import * as t from '@osdiab/io-ts';
-import { formatValidationErrors } from '@osdiab/io-ts-reporters';
+import * as t from 'io-ts';
+import { formatValidationErrors } from 'io-ts-reporters';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/pipeable';
 

@@ -1,5 +1,5 @@
 import test from 'ava';
-import * as iots from '@osdiab/io-ts';
+import * as iots from 'io-ts';
 
 import Reporter, { TYPE_MAX_LEN } from '../src';
 
