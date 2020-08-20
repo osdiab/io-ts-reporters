@@ -1,6 +1,6 @@
 {
   "name": "@osdiab/io-ts-reporters",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Formatting of io-ts validation errors",
   "main": "./target/src/index.js",
   "typings": "./target/src/index.d.ts",
@@ -28,18 +28,17 @@
     "url": "https://github.com/gillchristian/io-ts-reporters/issues"
   },
   "homepage": "https://github.com/gillchristian/io-ts-reporters",
-  "dependencies": {},
   "peerDependencies": {
-    "fp-ts": "^2.8.0",
-    "io-ts": "^2.0.0"
+    "fp-ts": "^2.8.1",
+    "io-ts": "^2.2.10"
   },
   "devDependencies": {
     "@types/tape": "^4.2.34",
     "ava": "^3.8.2",
     "docs-ts": "^0.5.1",
-    "fp-ts": "^2.8.0",
-    "@osdiab/io-ts": "^2.3.1",
-    "@osdiab/io-ts-types": "^0.6.2",
+    "fp-ts": "^2.8.1",
+    "io-ts": "^2.2.10",
+    "io-ts-types": "^0.5.10",
     "ts-node": "^8.6.2",
     "typescript": "^3.5.3",
     "xo": "^0.30.0"
